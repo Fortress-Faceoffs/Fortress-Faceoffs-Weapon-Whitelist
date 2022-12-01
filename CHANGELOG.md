@@ -1,9 +1,10 @@
 ## Release Notes
 
-## [1.0.0]
+## [2.0.0]
 
 ### Added
-Basic hardcoded version for festive fisticuffs
+Config system for weapon and class whitelist
 ### Fixed
 
 ### Removed
+Old hardcoded system
