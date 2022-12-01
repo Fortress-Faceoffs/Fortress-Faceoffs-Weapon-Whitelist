@@ -1,6 +1,6 @@
 #include <tf2utils>
 
-public bool isPlayerReal(client)
+bool isPlayerReal(client)
 {
     bool isReal = true;
 
@@ -10,7 +10,7 @@ public bool isPlayerReal(client)
     return isReal;
 }
 
-public int CreateNamedItem(int client, int itemindex, const char[] classname, int level, int quality, bool wearable = false)
+int CreateNamedItem(int client, int itemindex, const char[] classname, int level, int quality, bool wearable = false)
 {
     int weapon = CreateEntityByName(classname);
     
@@ -45,7 +45,7 @@ public int CreateNamedItem(int client, int itemindex, const char[] classname, in
     return weapon;
 }
 
-public int WeaponID(int client, int entity = -1, int slot = -1)
+int WeaponID(int client, int entity = -1, int slot = -1)
 {
     if (entity == -1)
     {
