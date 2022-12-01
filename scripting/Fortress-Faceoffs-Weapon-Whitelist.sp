@@ -5,7 +5,6 @@
 #include <tf2_stocks>
 #include <tf2attributes>
 #include <devstuff/utilstuff.sp>
-#include <tf2utils>
 #pragma newdecls required
 #pragma semicolon 1
 

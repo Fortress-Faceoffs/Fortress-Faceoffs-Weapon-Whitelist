@@ -1,3 +1,5 @@
+#include <tf2utils>
+
 public bool isPlayerReal(client)
 {
     bool isReal = true;
