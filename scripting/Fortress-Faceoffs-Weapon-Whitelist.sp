@@ -14,7 +14,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "",
-	version = "1.0.0",
+	version = "1.0.1",
 	url = "https://github.com/minesettimi/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -98,7 +98,7 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 	int meleeID = WeaponID(client, _, 2);
 		
 	//inefficient but only way to do this
-	if (secondID != 42 && secondID != 159 && secondID != 433 && secondID != 863 && secondID != 1002)
+	if (secondID != 42 && secondID != 159 && secondID != 433 && secondID != 863 && secondID != 1002 && secondID != 1190)
 	{
 		TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 		CreateNamedItem(client, 42, "tf_weapon_lunchbox", 15, 6);
