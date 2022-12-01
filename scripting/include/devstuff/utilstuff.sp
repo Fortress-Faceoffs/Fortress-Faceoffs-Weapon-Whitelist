@@ -45,7 +45,7 @@ public int CreateNamedItem(int client, int itemindex, const char[] classname, in
     return weapon;
 }
 
-public int WeaponID(int client, int slot, int entity = -1)
+public int WeaponID(int client, int entity = -1, int slot = -1)
 {
     if (entity == -1)
     {
