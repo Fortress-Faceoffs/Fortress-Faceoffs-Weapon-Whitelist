@@ -61,7 +61,7 @@ public void OnEnabledChanged(ConVar convar, char[] oldvalue, char[] newvalue)
 	}
 }
 
-public void Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
+public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
 {
 	if (enabled.BoolValue && event != INVALID_HANDLE)
 	{
@@ -83,7 +83,7 @@ public Action Event_Regenerate(Handle event, const char[] name, bool dontBroadca
 			CreateTimer(0.1, Timer_PlayerApplication, client);
 	}
 
-    return Plugin_Handled;
+	return Plugin_Handled;
 }
 
 public Action Timer_PlayerApplication(Handle timer, int client)
