@@ -62,7 +62,18 @@ public void OnPluginStart()
 
 	weaponConfig = CreateConVar("ffweplist_file", "example.cfg", "Which config to use for the whitelist.");
 
+	RegAdminCmd("ffweplist_reloadconfig", ConCmd_Reload, ADMFLAG_BAN, "Reloads the weapon config.", "ffweplist");
+
 	AutoExecConfig(true, "ffweplist");
+
+	LoadConfig();
+}
+
+public Action ConCmd_Reload(int client, int args)
+{
+	LoadConfig();
+	ReplyToCommand(client, "[FFWhitelist] Reloaded config.");
+	return Plugin_Handled;
 }
 
 void LoadConfig()
@@ -127,6 +138,15 @@ void LoadConfig()
 			if (!slotConfig) continue;
 
 			if (slotConfig.GetSection("default") == null || slotConfig.GetIntKeyValType(0) == KeyValType_Null) continue;
+			
+			//Cycle through weapons
+			/* 
+			for (int wep = 0; slotConfig.GetIntKeyValType(i) != KeyValType_Null; i++)
+			{
+				char wepName[64];
+				slotConfig.GetIntKey(wep, wepName, sizeof(wepName));
+				if (StrEqual(wepName,))
+			} */
 
 			hasValidSlot = true;
 		}
@@ -286,13 +306,15 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 			int defaultWep = -1;
 			slotConfig.GetInt("default", defaultWep);
 			char defaultWepClass[64];
-
+			
+			//Get classname and report it if its not there.
 			if (!TF2Econ_GetItemClassName(defaultWep, defaultWepClass, sizeof(defaultWepClass)))
 			{
 				PrintToServer("[FFWhitelist] Invalid default weapon for slot: %i", slot);
 				return Plugin_Handled;
 			}
-
+			
+			//equip wearable if requested item is wearable
 			bool isWearable = false;
 
 			if (StrContains(defaultWepClass, "tf_wearable") != -1)
