@@ -259,11 +259,6 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 			char whitelistItem[whitelistSize];
 
 			slotConfig.GetIntKey(i, whitelistItem, sizeof(whitelistItem));
-
-			if (StrEqual(whitelistItem, "saxxy", false))
-			{
-				TF2Econ_
-			}
 			
 			// check to test the weapon class or id based on entry.
 			if (StrContains(whitelistItem, "tf_", false) != -1)
