@@ -108,7 +108,11 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 	{
 		TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 		CreateNamedItem(client, 656, "tf_weapon_fists", 15, 6);
-	}    
+	}
+
+	int playerWep = GetPlayerWeaponSlot(client, 2);
+
+	FakeClientCommand(client, "use %i", playerWep);
 
 	return Plugin_Handled;
 }

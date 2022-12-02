@@ -1,8 +1,8 @@
 ## Release Notes
 
-## [1.0.1]
+## [1.0.2]
 
 ### Added
 ### Fixed
-Fixed banana not being allowed.
+Fixed not switching weapon to valid weapon.
 ### Removed
