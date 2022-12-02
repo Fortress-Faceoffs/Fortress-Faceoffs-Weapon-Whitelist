@@ -14,7 +14,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "",
-	version = "1.0.2",
+	version = "1.0.3",
 	url = "https://github.com/minesettimi/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -24,6 +24,7 @@ public void OnPluginStart()
 {
 
 	HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
+	HookEvent("post_inventory_application", Event_Regenerate, EventHookMode_Post);
 
 	enabled = CreateConVar("ffdonk_enabled", "0", "Enable ffdonk features.", _, true, 0.0, true, 1.0);
 	enabled.AddChangeHook(OnEnabledChanged);
@@ -67,10 +68,22 @@ public void Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadcas
 		int client = GetClientOfUserId(GetEventInt(event, "userid"));
 
 		if (isPlayerReal(client))
-		{
 			CreateTimer(0.1, Timer_PlayerApplication, client);
-		}
 	}
+
+	return Plugin_Handled;
+}
+
+public Action Event_Regenerate(Handle event, const char[] name, bool dontBroadcast)
+{
+	if (enabled.BoolValue && event != INVALID_HANDLE)
+	{
+		int client = GetClientOfUserId(GetEventInt(event, "userid"));
+		if (isPlayerReal(client))
+			CreateTimer(0.1, Timer_PlayerApplication, client);
+	}
+
+    return Plugin_Handled;
 }
 
 public Action Timer_PlayerApplication(Handle timer, int client)

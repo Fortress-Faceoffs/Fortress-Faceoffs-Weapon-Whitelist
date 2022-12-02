@@ -1,8 +1,8 @@
 ## Release Notes
 
-## [1.0.2]
+## [1.0.3]
 
 ### Added
 ### Fixed
-Fixed not switching weapon to valid weapon.
+Fixed resupply cabinet not applying whitelist
 ### Removed
