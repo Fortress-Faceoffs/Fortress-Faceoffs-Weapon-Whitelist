@@ -244,6 +244,8 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 		return Plugin_Handled;
 	}
 
+	int autoEquipSlot = -1;
+
 	for (int slot = 0; slot < sizeof(slotNames); slot++)
 	{
 		ConfigMap slotConfig = classConfig.GetSection(slotNames[slot]);
@@ -262,6 +264,8 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 		{
 			continue;
 		}
+
+		if (autoEquipSlot != -1) autoEquipSlot = slot;
 		
 		// get info about current weapon
 		int wepID = WeaponID(wepEnt);
@@ -273,12 +277,12 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 		bool validWep = false;
 		
 		//keep iterating until it cant find a key
-		for (int i = 0; slotConfig.GetIntKeyValType(i) != KeyValType_Null; i++)
+		for (int key = 0; slotConfig.GetIntKeyValType(key) != KeyValType_Null; key++)
 		{
-			int whitelistSize = slotConfig.GetIntKeySize(i);
+			int whitelistSize = slotConfig.GetIntKeySize(key);
 			char[] whitelistItem = new char[whitelistSize];
 
-			slotConfig.GetIntKey(i, whitelistItem, whitelistSize);
+			slotConfig.GetIntKey(key, whitelistItem, whitelistSize);
 			
 			// check to test the weapon class or id based on entry.
 			if (StrContains(whitelistItem, "tf_", false) != -1)
@@ -321,9 +325,13 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 				isWearable = true;
 
 			TF2_RemoveWeaponSlot(client, slot);
-			CreateNamedItem(client, defaultWep, defaultWepClass, 15, 6, isWearable);
-		}		
+			int newWep = CreateNamedItem(client, defaultWep, defaultWepClass, 15, 6, isWearable);
+		}
+
+
 	}
+
+	if (autoEquipSlot != -1) FakeClientCommand(client, "use %i", autoEquipSlot);
 
 	return Plugin_Handled;
 }
