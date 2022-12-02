@@ -122,7 +122,7 @@ void LoadConfig()
 		bool hasValidSlot = false;
 		for (int slot = 0; slot < sizeof(slotNames); slot++)
 		{
-			ConfigMap slotConfig = class.GetIntSection(slotNames[slot]);
+			ConfigMap slotConfig = class.GetSection(slotNames[slot]);
 			
 			if (!slotConfig) continue;
 
@@ -256,9 +256,9 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 		for (int i = 0; slotConfig.GetIntKeyValType(i) != KeyValType_Null; i++)
 		{
 			int whitelistSize = slotConfig.GetIntKeySize(i);
-			char whitelistItem[whitelistSize];
+			char[] whitelistItem = new char[whitelistSize];
 
-			slotConfig.GetIntKey(i, whitelistItem, sizeof(whitelistItem));
+			slotConfig.GetIntKey(i, whitelistItem, whitelistSize);
 			
 			// check to test the weapon class or id based on entry.
 			if (StrContains(whitelistItem, "tf_", false) != -1)
@@ -283,7 +283,8 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 
 		if (!validWep)
 		{
-			int defaultWep = slotConfig.GetInt("default");
+			int defaultWep = -1;
+			slotConfig.GetInt("default", defaultWep);
 			char defaultWepClass[64];
 
 			if (!TF2Econ_GetItemClassName(defaultWep, defaultWepClass, sizeof(defaultWepClass)))
