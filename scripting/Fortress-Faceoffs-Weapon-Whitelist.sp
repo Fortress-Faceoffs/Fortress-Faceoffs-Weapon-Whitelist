@@ -331,7 +331,7 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 
 	}
 
-	if (autoEquipSlot != -1) FakeClientCommand(client, "use %i", autoEquipSlot);
+	if (autoEquipSlot != -1) FakeClientCommand(client, "use %i", GetPlayerWeaponSlot(client, autoEquipSlot));
 
 	return Plugin_Handled;
 }
