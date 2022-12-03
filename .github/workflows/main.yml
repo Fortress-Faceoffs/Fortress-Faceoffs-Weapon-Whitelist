@@ -20,13 +20,13 @@ jobs:
         uses: rumblefrog/setup-sp@master
         with:
           version: "1.10.x"
-          version-file: ./scripting/Fortress-Faceoffs-Weapon-Whitelist.sp
+          version-file: ./scripting/ffweplist.sp
 
       - name: Compile plugins
         run: |
           mkdir -p plugins
           cd scripting
-          spcomp -E -w234 -O2 -v2 -i"include" -o"../plugins/Fortress-Faceoffs-Weapon-Whitelist.smx" Fortress-Faceoffs-Weapon-Whitelist.sp
+          spcomp -E -w234 -O2 -v2 -i"include" -o"../plugins/ffweplist.smx" ffweplist.sp
           echo "===OUT FILES==="
           cd ../plugins
           ls
@@ -44,7 +44,7 @@ jobs:
       - name: Zip output
         run: |
           cd plugins
-          zip -qq -r Fortress-Faceoffs-Weapon-Whitelist-${{ steps.setup_sp.outputs.plugin-version }}.zip Fortress-Faceoffs-Weapon-Whitelist.smx
+          zip -qq -r ffweplist-${{ steps.setup_sp.outputs.plugin-version }}.zip ffweplist.smx
         working-directory: ${{ env.SCRIPTS_PATH }}
 
       - name: Create Release
@@ -54,7 +54,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: v${{ steps.setup_sp.outputs.plugin-version }}
-          artifacts: "./plugins/Fortress-Faceoffs-Weapon-Whitelist-${{ steps.setup_sp.outputs.plugin-version }}.zip"
+          artifacts: "./plugins/ffweplist-${{ steps.setup_sp.outputs.plugin-version }}.zip"
           body: ${{ steps.changelog.outputs.changes }}
           draft: false
           allowUpdates: true
