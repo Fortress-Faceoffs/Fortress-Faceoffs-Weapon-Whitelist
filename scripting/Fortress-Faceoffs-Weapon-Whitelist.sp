@@ -85,7 +85,7 @@ void LoadConfig()
 
 	weaponConfig.GetString(configName, sizeof(configName));
 
-	Format(configLocation, sizeof(configLocation), "config/%s", configName);
+	Format(configLocation, sizeof(configLocation), "configs/%s", configName);
 
 	config = new ConfigMap(configLocation);
 
