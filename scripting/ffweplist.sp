@@ -79,6 +79,8 @@ public Action ConCmd_Reload(int client, int args)
 
 void LoadConfig()
 {
+	if (!enabled.BoolValue) return;
+
 	//Get and properly format config name
 	char configLocation[64];
 	char configName[32];
@@ -117,6 +119,7 @@ void LoadConfig()
 		return;
 	}
 
+	defaultClass = defClass;
 
 	// Prevent plugin from continuing if it can't find a class
 	bool loadedClass = false;
@@ -246,8 +249,8 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 	if (!allowedClasses[class-1])
 	{
 		TF2_SetPlayerClass(client, defaultClass);
-		class = view_as<int>(defaultClass);
 		TF2_RegeneratePlayer(client);
+		return Plugin_Handled;
 	}
 
 	ConfigMap root = config.GetSection("root");
@@ -281,10 +284,10 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 			continue;
 		}
 
-		if (autoEquipSlot != -1) autoEquipSlot = slot;
+		if (autoEquipSlot == -1) autoEquipSlot = slot;
 		
 		// get info about current weapon
-		int wepID = WeaponID(wepEnt);
+		int wepID = WeaponID(client, wepEnt);
 		char wepClass[64];
 		
 		TF2Econ_GetItemClassName(wepID, wepClass, sizeof(wepClass));
@@ -347,7 +350,7 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 
 	}
 
-	if (autoEquipSlot != -1) FakeClientCommand(client, "use %i", GetPlayerWeaponSlot(client, autoEquipSlot));
+	if (autoEquipSlot != -1) SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, autoEquipSlot));
 
 	return Plugin_Handled;
 }
