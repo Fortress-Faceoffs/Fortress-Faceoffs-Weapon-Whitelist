@@ -72,8 +72,8 @@ public void OnPluginStart()
 
 public Action ConCmd_Reload(int client, int args)
 {
+	ReplyToCommand(client, "[FFWhitelist] Attempting to load config.");
 	LoadConfig();
-	ReplyToCommand(client, "[FFWhitelist] Reloaded config.");
 	return Plugin_Handled;
 }
 
@@ -91,11 +91,11 @@ void LoadConfig()
 
 	if (!config)
 	{
-		PrintToServer("[FFWhitelist] Weapon config not found! Use ffweplist_file to set the config name.");
+		PrintToServer("[FFWhitelist] Weapon config failed to load! If not the correct name, use ffweplist_file to set the config name.");
 		return;
 	}
 
-	ConfigMap root = config.GetSection("config");
+	ConfigMap root = config.GetSection("root");
 
 	if (!root)
 	{
@@ -138,7 +138,7 @@ void LoadConfig()
 			
 			if (!slotConfig) continue;
 
-			if (slotConfig.GetSection("default") == null || slotConfig.GetIntKeyValType(0) == KeyValType_Null) continue;
+			if (slotConfig.GetKeyValType("default") == KeyValType_Null || slotConfig.GetKeyValType("0") == KeyValType_Null) continue;
 			
 			//Cycle through weapons
 			/* 
@@ -167,9 +167,9 @@ void LoadConfig()
 		return;
 	}
 	
-	if (!allowedClasses[defClass])
+	if (!allowedClasses[view_as<int>(defClass)-1])
 	{
-		PrintToServer("[FFWhitelist] Default class isn't allowed!");
+		PrintToServer("[FFWhitelist] Default class isn't whitelisted!");
 		return;
 	}
 	
@@ -250,7 +250,9 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 		TF2_RegeneratePlayer(client);
 	}
 
-	ConfigMap classConfig = config.GetSection(classes[class]);
+	ConfigMap root = config.GetSection("root");
+
+	ConfigMap classConfig = root.GetSection(classes[class]);
 
 	if (classConfig == null)
 	{
