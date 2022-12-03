@@ -1,8 +1,10 @@
 ## Release Notes
 
-## [1.0.3]
+## [2.0.0]
 
 ### Added
+Config system for weapon and class whitelist
 ### Fixed
-Fixed resupply cabinet not applying whitelist
+
 ### Removed
+Old hardcoded system
