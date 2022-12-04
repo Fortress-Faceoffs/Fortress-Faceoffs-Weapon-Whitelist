@@ -16,7 +16,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.0.0",
+	version = "2.0.1",
 	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -58,10 +58,10 @@ public void OnPluginStart()
 	HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
 	HookEvent("post_inventory_application", Event_Regenerate, EventHookMode_Post);
 
-	enabled = CreateConVar("ffweplist_enabled", "0", "Enable ffdonk features.", _, true, 0.0, true, 1.0);
+	enabled = CreateConVar("ffweplist_enabled", "0", "Enable ffweplist features.", _, true, 0.0, true, 1.0);
 	enabled.AddChangeHook(OnEnabledChanged);
 
-	weaponConfig = CreateConVar("ffweplist_file", "example.cfg", "Which config to use for the whitelist.");
+	weaponConfig = CreateConVar("ffweplist_file", "exampleconfig.cfg", "Which config to use for the whitelist.");
 
 	RegAdminCmd("ffweplist_reloadconfig", ConCmd_Reload, ADMFLAG_BAN, "Reloads the weapon config.", "ffweplist");
 
