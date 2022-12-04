@@ -58,7 +58,7 @@ public void OnPluginStart()
 	HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
 	HookEvent("post_inventory_application", Event_Regenerate, EventHookMode_Post);
 
-	enabled = CreateConVar("ffweplist_enabled", "0", "Enable ffweplist features.", _, true, 0.0, true, 1.0);
+	enabled = CreateConVar("ffweplist_enabled", "1", "Enable ffdonk features.", _, true, 0.0, true, 1.0);
 	enabled.AddChangeHook(OnEnabledChanged);
 
 	weaponConfig = CreateConVar("ffweplist_file", "exampleconfig.cfg", "Which config to use for the whitelist.");
@@ -278,7 +278,6 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 
 		int wepEnt = TF2Util_GetPlayerLoadoutEntity(client, slot);
 		
-		// just incase it doesn't get regular weapons
 		if (wepEnt == -1)
 		{
 			continue;
