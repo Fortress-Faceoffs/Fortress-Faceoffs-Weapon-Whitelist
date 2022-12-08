@@ -1,6 +1,6 @@
 ## Release Notes
 
-## [2.0.2]
+## [2.0.3]
 
 ### Fixed
-Plugin is now auto-enabled.
+Plugin trying to load before auto config is loaded.
