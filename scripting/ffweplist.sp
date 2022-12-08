@@ -16,7 +16,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.0.1",
+	version = "2.0.3",
 	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -67,12 +67,18 @@ public void OnPluginStart()
 
 	AutoExecConfig(true, "ffweplist");
 
-	LoadConfig();
+	CreateTimer(1.0, LoadTimer, 0, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action ConCmd_Reload(int client, int args)
 {
 	ReplyToCommand(client, "[FFWhitelist] Attempting to load config.");
+	LoadConfig();
+	return Plugin_Handled;
+}
+
+Action LoadTimer(Handle timer)
+{
 	LoadConfig();
 	return Plugin_Handled;
 }

@@ -1,10 +1,6 @@
 ## Release Notes
 
-## [2.0.0]
+## [2.0.3]
 
-### Added
-Config system for weapon and class whitelist
 ### Fixed
-
-### Removed
-Old hardcoded system
+Plugin trying to load before auto config is loaded.
