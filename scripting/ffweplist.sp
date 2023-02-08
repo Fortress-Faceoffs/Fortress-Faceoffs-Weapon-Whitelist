@@ -16,7 +16,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.0.3",
+	version = "2.0.4",
 	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -191,24 +191,16 @@ public void OnEnabledChanged(ConVar convar, char[] oldvalue, char[] newvalue)
 	if (StringToInt(newvalue) == 0)
 	{
 		for (int i = 1; i <= MaxClients; i++)
-		{
 			if (isPlayerReal(i))
-			{
 				TF2_RegeneratePlayer(i);
-			}
-		}
 
 		PrintToServer("Weapon whitelist plugin is disabled.");
 	}
 	else
 	{
 		for (int i = 1; i <= MaxClients; i++)
-		{
 			if (isPlayerReal(i))
-			{
 				TF2_RegeneratePlayer(i);
-			}
-		}
 
 		LoadConfig();
 		PrintToServer("Weapon whitelist plugin is enabled.");
@@ -285,9 +277,7 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 		int wepEnt = TF2Util_GetPlayerLoadoutEntity(client, slot);
 		
 		if (wepEnt == -1)
-		{
 			continue;
-		}
 
 		if (autoEquipSlot == -1) autoEquipSlot = slot;
 		
