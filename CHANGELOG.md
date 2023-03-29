@@ -1,6 +1,6 @@
 ## Release Notes
 
-## [2.0.3]
+## [2.0.4]
 
-### Fixed
-Plugin trying to load before auto config is loaded.
+### Removed
+Auto config
