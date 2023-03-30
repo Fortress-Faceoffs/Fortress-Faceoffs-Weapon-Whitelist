@@ -16,7 +16,7 @@ public Plugin myinfo =
     name = "Fortress-Faceoffs-Weapon-Whitelist",
     author = "minesettimi",
     description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-    version = "2.0.5",
+    version = "2.0.6",
     url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -93,6 +93,8 @@ void LoadConfig()
 {
     if (!enabled.BoolValue) return;
 
+    loaded = false;
+
     //Get and properly format config name
     char configLocation[64];
     char configName[32];
@@ -116,6 +118,10 @@ void LoadConfig()
         PrintToServer("[FFWhitelist] Incorrect config found!");
         return;
     }
+
+    defaultClass = TFClass_Unknown;
+    for (int i = 0; i < sizeof(allowedClasses); i++)
+    	allowedClasses[i] = false;
 
     //Get default class
     TFClassType defClass;
