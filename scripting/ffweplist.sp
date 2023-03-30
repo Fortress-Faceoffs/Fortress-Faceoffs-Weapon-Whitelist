@@ -13,11 +13,11 @@
 
 public Plugin myinfo =
 {
-	name = "Fortress-Faceoffs-Weapon-Whitelist",
-	author = "minesettimi",
-	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.0.4",
-	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
+    name = "Fortress-Faceoffs-Weapon-Whitelist",
+    author = "minesettimi",
+    description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
+    version = "2.0.5",
+    url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
 ConVar enabled;
@@ -30,322 +30,328 @@ TFClassType defaultClass;
 
 char classes[][] = 
 {
-	"unknown",
-	"scout",
-	"sniper",
-	"soldier",
-	"demoman",
-	"medic",
-	"heavy",
-	"pyro",
-	"spy",
-	"engineer"
+    "unknown",
+    "scout",
+    "sniper",
+    "soldier",
+    "demoman",
+    "medic",
+    "heavy",
+    "pyro",
+    "spy",
+    "engineer"
 };
 
 char slotNames[][] =
 {
-	"primary",
-	"secondary",
-	"melee",
-	"pda",
-	"pda2",
-	"building"
+    "primary",
+    "secondary",
+    "melee",
+    "pda",
+    "pda2",
+    "building"
 };
 
 public void OnPluginStart()
 {
 
-	HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
-	HookEvent("post_inventory_application", Event_Regenerate, EventHookMode_Post);
+    HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
+    HookEvent("post_inventory_application", Event_Regenerate, EventHookMode_Post);
 
-	enabled = CreateConVar("ffweplist_enabled", "1", "Enable ffdonk features.", _, true, 0.0, true, 1.0);
-	enabled.AddChangeHook(OnEnabledChanged);
+    enabled = CreateConVar("ffweplist_enabled", "1", "Enable ffdonk features.", _, true, 0.0, true, 1.0);
+    enabled.AddChangeHook(OnEnabledChanged);
 
-	weaponConfig = CreateConVar("ffweplist_file", "exampleconfig.cfg", "Which config to use for the whitelist.");
+    weaponConfig = CreateConVar("ffweplist_file", "exampleconfig.cfg", "Which config to use for the whitelist.");
+    weaponConfig.AddChangeHook(fileChanged);
 
-	RegAdminCmd("ffweplist_reloadconfig", ConCmd_Reload, ADMFLAG_BAN, "Reloads the weapon config.", "ffweplist");
+    RegAdminCmd("ffweplist_reloadconfig", ConCmd_Reload, ADMFLAG_BAN, "Reloads the weapon config.", "ffweplist");
 
-	//AutoExecConfig(true, "ffweplist");
+    //AutoExecConfig(true, "ffweplist");
 
-	CreateTimer(1.0, LoadTimer, 0, TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(1.0, LoadTimer, 0, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+void fileChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+    CreateTimer(1.0, LoadTimer, 0, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action ConCmd_Reload(int client, int args)
 {
-	ReplyToCommand(client, "[FFWhitelist] Attempting to load config.");
-	LoadConfig();
-	return Plugin_Handled;
+    ReplyToCommand(client, "[FFWhitelist] Attempting to load config.");
+    LoadConfig();
+    return Plugin_Handled;
 }
 
 Action LoadTimer(Handle timer)
 {
-	LoadConfig();
-	return Plugin_Handled;
+    LoadConfig();
+    return Plugin_Handled;
 }
 
 void LoadConfig()
 {
-	if (!enabled.BoolValue) return;
+    if (!enabled.BoolValue) return;
 
-	//Get and properly format config name
-	char configLocation[64];
-	char configName[32];
+    //Get and properly format config name
+    char configLocation[64];
+    char configName[32];
 
-	weaponConfig.GetString(configName, sizeof(configName));
+    weaponConfig.GetString(configName, sizeof(configName));
 
-	Format(configLocation, sizeof(configLocation), "configs/%s", configName);
+    Format(configLocation, sizeof(configLocation), "configs/%s", configName);
 
-	config = new ConfigMap(configLocation);
+    config = new ConfigMap(configLocation);
 
-	if (!config)
-	{
-		PrintToServer("[FFWhitelist] Weapon config failed to load! If not the correct name, use ffweplist_file to set the config name.");
-		return;
-	}
+    if (!config)
+    {
+        PrintToServer("[FFWhitelist] Weapon config failed to load! If not the correct name, use ffweplist_file to set the config name.");
+        return;
+    }
 
-	ConfigMap root = config.GetSection("root");
+    ConfigMap root = config.GetSection("root");
 
-	if (!root)
-	{
-		PrintToServer("[FFWhitelist] Incorrect config found!");
-		return;
-	}
+    if (!root)
+    {
+        PrintToServer("[FFWhitelist] Incorrect config found!");
+        return;
+    }
 
-	//Get default class
-	TFClassType defClass;
-	char classBuffer[128];
-	
-	root.Get("default", classBuffer, sizeof(classBuffer));
+    //Get default class
+    TFClassType defClass;
+    char classBuffer[128];
+    
+    root.Get("default", classBuffer, sizeof(classBuffer));
 
-	defClass = TF2_GetClass(classBuffer);
+    defClass = TF2_GetClass(classBuffer);
 
-	if (defClass == TFClass_Unknown)
-	{
-		PrintToServer("[FFWhitelist] Invalid default class in config!");
-		return;
-	}
+    if (defClass == TFClass_Unknown)
+    {
+        PrintToServer("[FFWhitelist] Invalid default class in config!");
+        return;
+    }
 
-	defaultClass = defClass;
+    defaultClass = defClass;
 
-	// Prevent plugin from continuing if it can't find a class
-	bool loadedClass = false;
+    // Prevent plugin from continuing if it can't find a class
+    bool loadedClass = false;
 
-	for (int i = 1; i < sizeof(classes); i++)
-	{
-		ConfigMap class = root.GetSection(classes[i]);
-		
-		if (!class) continue;
+    for (int i = 1; i < sizeof(classes); i++)
+    {
+        ConfigMap class = root.GetSection(classes[i]);
+        
+        if (!class) continue;
 
-		if (!loadedClass) loadedClass = true;
+        if (!loadedClass) loadedClass = true;
 
-		// Prevent loading if there are no valid weapons on class.
+        // Prevent loading if there are no valid weapons on class.
 
-		bool hasValidSlot = false;
-		for (int slot = 0; slot < sizeof(slotNames); slot++)
-		{
-			ConfigMap slotConfig = class.GetSection(slotNames[slot]);
-			
-			if (!slotConfig) continue;
+        bool hasValidSlot = false;
+        for (int slot = 0; slot < sizeof(slotNames); slot++)
+        {
+            ConfigMap slotConfig = class.GetSection(slotNames[slot]);
+            
+            if (!slotConfig) continue;
 
-			if (slotConfig.GetKeyValType("default") == KeyValType_Null || slotConfig.GetKeyValType("0") == KeyValType_Null) continue;
-			
-			//Cycle through weapons
-			/* 
-			for (int wep = 0; slotConfig.GetIntKeyValType(i) != KeyValType_Null; i++)
-			{
-				char wepName[64];
-				slotConfig.GetIntKey(wep, wepName, sizeof(wepName));
-				if (StrEqual(wepName,))
-			} */
+            if (slotConfig.GetKeyValType("default") == KeyValType_Null || slotConfig.GetKeyValType("0") == KeyValType_Null) continue;
+            
+            //Cycle through weapons
+            /* 
+            for (int wep = 0; slotConfig.GetIntKeyValType(i) != KeyValType_Null; i++)
+            {
+                char wepName[64];
+                slotConfig.GetIntKey(wep, wepName, sizeof(wepName));
+                if (StrEqual(wepName,))
+            } */
 
-			hasValidSlot = true;
-		}
+            hasValidSlot = true;
+        }
 
-		if (!hasValidSlot)
-		{
-			PrintToServer("[FFWhitelist] Found class: %s but no weapons are available!", classes[i]);
-			continue;
-		}
+        if (!hasValidSlot)
+        {
+            PrintToServer("[FFWhitelist] Found class: %s but no weapons are available!", classes[i]);
+            continue;
+        }
 
-		allowedClasses[i-1] = true;
-	}
+        allowedClasses[i-1] = true;
+    }
 
-	if (!loadedClass)
-	{
-		PrintToServer("[FFWhitelist] No classes found in config!");
-		return;
-	}
-	
-	if (!allowedClasses[view_as<int>(defClass)-1])
-	{
-		PrintToServer("[FFWhitelist] Default class isn't whitelisted!");
-		return;
-	}
-	
-	PrintToServer("[FFWhitelist] Whitelist loaded and verified!");
-	loaded = true;
+    if (!loadedClass)
+    {
+        PrintToServer("[FFWhitelist] No classes found in config!");
+        return;
+    }
+    
+    if (!allowedClasses[view_as<int>(defClass)-1])
+    {
+        PrintToServer("[FFWhitelist] Default class isn't whitelisted!");
+        return;
+    }
+    
+    PrintToServer("[FFWhitelist] Whitelist loaded and verified!");
+    loaded = true;
 }
 
 public void OnEnabledChanged(ConVar convar, char[] oldvalue, char[] newvalue)
 {
-	if (StringToInt(newvalue) == 0)
-	{
-		for (int i = 1; i <= MaxClients; i++)
-			if (isPlayerReal(i))
-				TF2_RegeneratePlayer(i);
+    if (StringToInt(newvalue) == 0)
+    {
+        for (int i = 1; i <= MaxClients; i++)
+            if (isPlayerReal(i))
+                TF2_RegeneratePlayer(i);
 
-		PrintToServer("Weapon whitelist plugin is disabled.");
-	}
-	else
-	{
-		for (int i = 1; i <= MaxClients; i++)
-			if (isPlayerReal(i))
-				TF2_RegeneratePlayer(i);
+        PrintToServer("Weapon whitelist plugin is disabled.");
+    }
+    else
+    {
+        for (int i = 1; i <= MaxClients; i++)
+            if (isPlayerReal(i))
+                TF2_RegeneratePlayer(i);
 
-		LoadConfig();
-		PrintToServer("Weapon whitelist plugin is enabled.");
-	}
+        LoadConfig();
+        PrintToServer("Weapon whitelist plugin is enabled.");
+    }
 }
 
 public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
 {
-	if (enabled.BoolValue && event != INVALID_HANDLE)
-	{
-		int client = GetClientOfUserId(GetEventInt(event, "userid"));
+    if (enabled.BoolValue && event != INVALID_HANDLE)
+    {
+        int client = GetClientOfUserId(GetEventInt(event, "userid"));
 
-		if (isPlayerReal(client))
-			CreateTimer(0.1, Timer_PlayerApplication, client);
-	}
+        if (isPlayerReal(client))
+            CreateTimer(0.1, Timer_PlayerApplication, client);
+    }
 
-	return Plugin_Handled;
+    return Plugin_Handled;
 }
 
 public Action Event_Regenerate(Handle event, const char[] name, bool dontBroadcast)
 {
-	if (enabled.BoolValue && event != INVALID_HANDLE)
-	{
-		int client = GetClientOfUserId(GetEventInt(event, "userid"));
-		if (isPlayerReal(client))
-			CreateTimer(0.1, Timer_PlayerApplication, client);
-	}
+    if (enabled.BoolValue && event != INVALID_HANDLE)
+    {
+        int client = GetClientOfUserId(GetEventInt(event, "userid"));
+        if (isPlayerReal(client))
+            CreateTimer(0.1, Timer_PlayerApplication, client);
+    }
 
-	return Plugin_Handled;
+    return Plugin_Handled;
 }
 
 
 public Action Timer_PlayerApplication(Handle timer, int client)
 {
-	if (!enabled.BoolValue || !loaded) return Plugin_Handled;
+    if (!enabled.BoolValue || !loaded) return Plugin_Handled;
 
-	//dont enforce weapons on spectators
-	if (TF2_GetClientTeam(client) == TFTeam_Spectator || TF2_GetClientTeam(client) == TFTeam_Unassigned)
-		return Plugin_Handled;
-		
-	//Class authentication
-	int class = view_as<int>(TF2_GetPlayerClass(client));
+    //dont enforce weapons on spectators
+    if (TF2_GetClientTeam(client) == TFTeam_Spectator || TF2_GetClientTeam(client) == TFTeam_Unassigned)
+        return Plugin_Handled;
+        
+    //Class authentication
+    int class = view_as<int>(TF2_GetPlayerClass(client));
 
-	if (!allowedClasses[class-1])
-	{
-		TF2_SetPlayerClass(client, defaultClass);
-		TF2_RegeneratePlayer(client);
-		return Plugin_Handled;
-	}
+    if (!allowedClasses[class-1])
+    {
+        TF2_SetPlayerClass(client, defaultClass);
+        TF2_RegeneratePlayer(client);
+        return Plugin_Handled;
+    }
 
-	ConfigMap root = config.GetSection("root");
+    ConfigMap root = config.GetSection("root");
 
-	ConfigMap classConfig = root.GetSection(classes[class]);
+    ConfigMap classConfig = root.GetSection(classes[class]);
 
-	if (classConfig == null)
-	{
-		PrintToServer("[FFWhitelist] Unable to find class section for class: %s!", classes[class]);
-		return Plugin_Handled;
-	}
+    if (classConfig == null)
+    {
+        PrintToServer("[FFWhitelist] Unable to find class section for class: %s!", classes[class]);
+        return Plugin_Handled;
+    }
 
-	int autoEquipSlot = -1;
+    int autoEquipSlot = -1;
 
-	for (int slot = 0; slot < sizeof(slotNames); slot++)
-	{
-		ConfigMap slotConfig = classConfig.GetSection(slotNames[slot]);
-		
-		//remove weapons when not defined
-		if (slotConfig == null)
-		{
-			TF2_RemoveWeaponSlot(client, slot);
-			continue;
-		}
+    for (int slot = 0; slot < sizeof(slotNames); slot++)
+    {
+        ConfigMap slotConfig = classConfig.GetSection(slotNames[slot]);
+        
+        //remove weapons when not defined
+        if (slotConfig == null)
+        {
+            TF2_RemoveWeaponSlot(client, slot);
+            continue;
+        }
 
-		int wepEnt = TF2Util_GetPlayerLoadoutEntity(client, slot);
-		
-		if (wepEnt == -1)
-			continue;
+        int wepEnt = TF2Util_GetPlayerLoadoutEntity(client, slot);
+        
+        if (wepEnt == -1)
+            continue;
 
-		if (autoEquipSlot == -1) autoEquipSlot = slot;
-		
-		// get info about current weapon
-		int wepID = WeaponID(client, wepEnt);
-		char wepClass[64];
-		
-		TF2Econ_GetItemClassName(wepID, wepClass, sizeof(wepClass));
-		
-		// check if current weapon is valid
-		bool validWep = false;
-		
-		//keep iterating until it cant find a key
-		for (int key = 0; slotConfig.GetIntKeyValType(key) != KeyValType_Null; key++)
-		{
-			int whitelistSize = slotConfig.GetIntKeySize(key);
-			char[] whitelistItem = new char[whitelistSize];
+        if (autoEquipSlot == -1) autoEquipSlot = slot;
+        
+        // get info about current weapon
+        int wepID = WeaponID(client, wepEnt);
+        char wepClass[64];
+        
+        TF2Econ_GetItemClassName(wepID, wepClass, sizeof(wepClass));
+        
+        // check if current weapon is valid
+        bool validWep = false;
+        
+        //keep iterating until it cant find a key
+        for (int key = 0; slotConfig.GetIntKeyValType(key) != KeyValType_Null; key++)
+        {
+            int whitelistSize = slotConfig.GetIntKeySize(key);
+            char[] whitelistItem = new char[whitelistSize];
 
-			slotConfig.GetIntKey(key, whitelistItem, whitelistSize);
-			
-			// check to test the weapon class or id based on entry.
-			if (StrContains(whitelistItem, "tf_", false) != -1)
-			{
-				if (StrEqual(whitelistItem, wepClass))
-				{
-					validWep = true;
-					break;
-				}
-			}
-			else
-			{
-				int whitelistId = StringToInt(whitelistItem);
+            slotConfig.GetIntKey(key, whitelistItem, whitelistSize);
+            
+            // check to test the weapon class or id based on entry.
+            if (StrContains(whitelistItem, "tf_", false) != -1)
+            {
+                if (StrEqual(whitelistItem, wepClass))
+                {
+                    validWep = true;
+                    break;
+                }
+            }
+            else
+            {
+                int whitelistId = StringToInt(whitelistItem);
 
-				if (wepID == whitelistId)
-				{
-					validWep = true;
-					break;
-				}
-			}
-		}
+                if (wepID == whitelistId)
+                {
+                    validWep = true;
+                    break;
+                }
+            }
+        }
 
-		if (!validWep)
-		{
-			int defaultWep = -1;
-			slotConfig.GetInt("default", defaultWep);
-			char defaultWepClass[64];
-			
-			//Get classname and report it if its not there.
-			if (!TF2Econ_GetItemClassName(defaultWep, defaultWepClass, sizeof(defaultWepClass)))
-			{
-				PrintToServer("[FFWhitelist] Invalid default weapon for slot: %i", slot);
-				return Plugin_Handled;
-			}
-			
-			//equip wearable if requested item is wearable
-			bool isWearable = false;
+        if (!validWep)
+        {
+            int defaultWep = -1;
+            slotConfig.GetInt("default", defaultWep);
+            char defaultWepClass[64];
+            
+            //Get classname and report it if its not there.
+            if (!TF2Econ_GetItemClassName(defaultWep, defaultWepClass, sizeof(defaultWepClass)))
+            {
+                PrintToServer("[FFWhitelist] Invalid default weapon for slot: %i", slot);
+                return Plugin_Handled;
+            }
+            
+            //equip wearable if requested item is wearable
+            bool isWearable = false;
 
-			if (StrContains(defaultWepClass, "tf_wearable") != -1)
-				isWearable = true;
+            if (StrContains(defaultWepClass, "tf_wearable") != -1)
+                isWearable = true;
 
-			TF2_RemoveWeaponSlot(client, slot);
-			CreateNamedItem(client, defaultWep, defaultWepClass, 15, 6, isWearable);
-		}
+            TF2_RemoveWeaponSlot(client, slot);
+            CreateNamedItem(client, defaultWep, defaultWepClass, 15, 6, isWearable);
+        }
 
 
-	}
+    }
 
-	if (autoEquipSlot != -1) SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, autoEquipSlot));
+    if (autoEquipSlot != -1) SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, autoEquipSlot));
 
-	return Plugin_Handled;
+    return Plugin_Handled;
 }

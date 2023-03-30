@@ -1,6 +1,6 @@
 ## Release Notes
 
-## [2.0.4]
+## [2.0.5]
 
-### Removed
-Auto config
+### Added
+Auto reload config on restart
