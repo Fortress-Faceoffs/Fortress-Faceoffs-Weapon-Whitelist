@@ -1,6 +1,6 @@
 ## Release Notes
 
-## [2.0.5]
+## [2.0.6]
 
-### Added
-Auto reload config on restart
+### Fixed
+Variables not being reset before configs are loaded.
