@@ -18,7 +18,7 @@ public Plugin myinfo =
     name = "Fortress-Faceoffs-Weapon-Whitelist",
     author = "minesettimi",
     description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-    version = "2.1.0",
+    version = "2.1.1",
     url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -124,7 +124,7 @@ void LoadConfig(char[] newConfig)
     if (!StrEqual(overrideName, ""))
         newConfigBuffer = overrideName;
 
-    Format(configLocation, sizeof(configLocation), "configs/%s", newConfigBuffer);
+    Format(configLocation, sizeof(configLocation), "configs/ffwl/%s", newConfigBuffer);
 
     config = new ConfigMap(configLocation);
 
@@ -232,7 +232,7 @@ any Native_LoadConfig(Handle plugin, int numParams)
     GetNativeStringLength(1, length);
 
     char[] buffer = new char[length];
-    GetNativeString(1, buffer, length);
+    GetNativeString(1, buffer, length+1);
 
     LoadConfig(buffer);
     regenAllPlayers();
