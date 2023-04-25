@@ -10,23 +10,27 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+GlobalForward loadoutApplied;
+GlobalForward configLoaded;
 
 public Plugin myinfo =
 {
     name = "Fortress-Faceoffs-Weapon-Whitelist",
     author = "minesettimi",
     description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-    version = "2.0.6",
+    version = "2.1.0",
     url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
 ConVar enabled;
 ConVar weaponConfig;
+ConVar autoLoad;
 ConfigMap config;
 
 bool loaded = false;
 bool allowedClasses[9] = {false, ...};
 TFClassType defaultClass;
+char configName[64] = "";
 
 char classes[][] = 
 {
@@ -52,56 +56,75 @@ char slotNames[][] =
     "building"
 };
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    RegPluginLibrary("ffweplist");
+
+    CreateNative("FFWL_LoadConfig", Native_LoadConfig);
+    loadoutApplied = new GlobalForward("FFWL_LoadoutApplied", ET_Ignore, Param_Cell);
+    configLoaded = new GlobalForward("FFWL_ConfigLoaded", ET_Ignore);
+
+    return APLRes_Success;
+}
+
 public void OnPluginStart()
 {
-
     HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
     HookEvent("post_inventory_application", Event_Regenerate, EventHookMode_Post);
 
     enabled = CreateConVar("ffweplist_enabled", "1", "Enable ffdonk features.", _, true, 0.0, true, 1.0);
     enabled.AddChangeHook(OnEnabledChanged);
 
-    weaponConfig = CreateConVar("ffweplist_file", "exampleconfig.cfg", "Which config to use for the whitelist.");
+    autoLoad = CreateConVar("ffweplist_autoload", "1", "Autoloads the config.", _, true, 0.0, true, 1.0);
+
+    weaponConfig = CreateConVar("ffweplist_file", "", "An override to which config that the plugin is using.");
     weaponConfig.AddChangeHook(fileChanged);
 
     RegAdminCmd("ffweplist_reloadconfig", ConCmd_Reload, ADMFLAG_BAN, "Reloads the weapon config.", "ffweplist");
 
     //AutoExecConfig(true, "ffweplist");
 
-    CreateTimer(1.0, LoadTimer, 0, TIMER_FLAG_NO_MAPCHANGE);
+    if (autoLoad.BoolValue) CreateTimer(1.0, LoadTimer, 0, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 void fileChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-    CreateTimer(1.0, LoadTimer, 0, TIMER_FLAG_NO_MAPCHANGE);
+    if (autoLoad.BoolValue) CreateTimer(1.0, LoadTimer, 0, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action ConCmd_Reload(int client, int args)
 {
     ReplyToCommand(client, "[FFWhitelist] Attempting to load config.");
-    LoadConfig();
+    LoadConfig(configName);
     return Plugin_Handled;
 }
 
 Action LoadTimer(Handle timer)
 {
-    LoadConfig();
+    LoadConfig(configName);
     return Plugin_Handled;
 }
 
-void LoadConfig()
+void LoadConfig(char[] newConfig)
 {
     if (!enabled.BoolValue) return;
 
     loaded = false;
+    configName = "";
 
     //Get and properly format config name
     char configLocation[64];
-    char configName[32];
+    char overrideName[32];
+    char newConfigBuffer[64] = "";
 
-    weaponConfig.GetString(configName, sizeof(configName));
+    StrCat(newConfigBuffer, sizeof(newConfigBuffer), newConfig);
 
-    Format(configLocation, sizeof(configLocation), "configs/%s", configName);
+    weaponConfig.GetString(overrideName, sizeof(overrideName));
+
+    if (!StrEqual(overrideName, ""))
+        newConfigBuffer = overrideName;
+
+    Format(configLocation, sizeof(configLocation), "configs/%s", newConfigBuffer);
 
     config = new ConfigMap(configLocation);
 
@@ -121,7 +144,7 @@ void LoadConfig()
 
     defaultClass = TFClass_Unknown;
     for (int i = 0; i < sizeof(allowedClasses); i++)
-    	allowedClasses[i] = false;
+        allowedClasses[i] = false;
 
     //Get default class
     TFClassType defClass;
@@ -193,30 +216,52 @@ void LoadConfig()
         PrintToServer("[FFWhitelist] Default class isn't whitelisted!");
         return;
     }
+
+	//Forward success
+    Call_StartForward(configLoaded);
+    Call_Finish();
     
     PrintToServer("[FFWhitelist] Whitelist loaded and verified!");
+    strcopy(configName, sizeof(configName), newConfigBuffer);
     loaded = true;
+}
+
+any Native_LoadConfig(Handle plugin, int numParams)
+{
+    int length;
+    GetNativeStringLength(1, length);
+
+    char[] buffer = new char[length];
+    GetNativeString(1, buffer, length);
+
+    LoadConfig(buffer);
+    regenAllPlayers();
+
+    return true;
 }
 
 public void OnEnabledChanged(ConVar convar, char[] oldvalue, char[] newvalue)
 {
     if (StringToInt(newvalue) == 0)
     {
-        for (int i = 1; i <= MaxClients; i++)
-            if (isPlayerReal(i))
-                TF2_RegeneratePlayer(i);
+        regenAllPlayers();
 
         PrintToServer("Weapon whitelist plugin is disabled.");
     }
     else
     {
-        for (int i = 1; i <= MaxClients; i++)
-            if (isPlayerReal(i))
-                TF2_RegeneratePlayer(i);
+        LoadConfig(configName);
+        regenAllPlayers();
 
-        LoadConfig();
         PrintToServer("Weapon whitelist plugin is enabled.");
     }
+}
+
+public void regenAllPlayers()
+{
+    for (int i = 1; i <= MaxClients; i++)
+            if (isPlayerReal(i))
+                TF2_RegeneratePlayer(i);
 }
 
 public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
@@ -358,6 +403,11 @@ public Action Timer_PlayerApplication(Handle timer, int client)
     }
 
     if (autoEquipSlot != -1) SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, autoEquipSlot));
+
+	//Forward loadout applied.
+    Call_StartForward(loadoutApplied);
+    Call_PushCell(client);
+    Call_Finish();
 
     return Plugin_Handled;
 }
