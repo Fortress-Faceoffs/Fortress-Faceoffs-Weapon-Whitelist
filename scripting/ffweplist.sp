@@ -19,7 +19,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.1.1",
+	version = "2.1.2",
 	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
