@@ -19,7 +19,7 @@ jobs:
         id: setup_sp
         uses: rumblefrog/setup-sp@master
         with:
-          version: "1.10.x"
+          version: "1.11.x"
           version-file: ./scripting/ffweplist.sp
 
       - name: Compile plugins
@@ -44,7 +44,7 @@ jobs:
       - name: Zip output
         run: |
           cd plugins
-          zip -qq -r ffweplist-${{ steps.setup_sp.outputs.plugin-version }}.zip ffweplist.smx
+          zip -qq -r ffweplist.zip ffweplist.smx
         working-directory: ${{ env.SCRIPTS_PATH }}
 
       - name: Create Release
@@ -54,7 +54,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: v${{ steps.setup_sp.outputs.plugin-version }}
-          artifacts: "./plugins/ffweplist-${{ steps.setup_sp.outputs.plugin-version }}.zip"
+          artifacts: "./plugins/ffweplist.zip"
           body: ${{ steps.changelog.outputs.changes }}
           draft: false
           allowUpdates: true
