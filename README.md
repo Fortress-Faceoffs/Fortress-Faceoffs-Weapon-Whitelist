@@ -4,10 +4,10 @@
 ---
 
 ## How to use
-Make a config like the example config and put it into your server's configs folder.
+Make a config like the example config and put it into addons/sourcemod/configs/ffwl.
 
 Use `ffweplist_file FILENAME.cfg` to set which file to use. 
->Change it in cfg/sourcemod/ffweplist.cfg to keep it over map changes
+>Change it in your server's main cfg to keep it over map changes
 
 Use `ffweplist_reloadconfig` to reload the config.
 

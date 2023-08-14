@@ -19,7 +19,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.1.3",
+	version = "2.1.4",
 	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -344,9 +344,8 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 		char wepClass[64];
 
 		// multiclass support
-		TF2_TranslateWeaponEntForClass(view_as<TFClassType>(class), wepClass, sizeof(wepClass));
-		
-		TF2Econ_GetItemClassName(wepID, wepClass, sizeof(wepClass));
+		if (!TF2_TranslateWeaponEntForClass(view_as<TFClassType>(class), wepClass, sizeof(wepClass)))
+			TF2Econ_GetItemClassName(wepID, wepClass, sizeof(wepClass));
 		
 		// check if current weapon is valid
 		bool validWep = false;
