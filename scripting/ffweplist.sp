@@ -19,7 +19,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.1.4",
+	version = "2.1.5",
 	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -343,9 +343,7 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 		int wepID = WeaponID(client, wepEnt);
 		char wepClass[64];
 
-		// multiclass support
-		if (!TF2_TranslateWeaponEntForClass(view_as<TFClassType>(class), wepClass, sizeof(wepClass)))
-			TF2Econ_GetItemClassName(wepID, wepClass, sizeof(wepClass));
+		TF2Econ_GetItemClassName(wepID, wepClass, sizeof(wepClass));
 		
 		// check if current weapon is valid
 		bool validWep = false;
@@ -353,16 +351,13 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 		//keep iterating until it cant find a key
 		for (int key = 0; slotConfig.GetIntKeyValType(key) != KeyValType_Null; key++)
 		{
-			int whitelistSize = slotConfig.GetIntKeySize(key);
-			char[] whitelistItem = new char[whitelistSize];
+			char whitelistItem[128];
 
-			slotConfig.GetIntKey(key, whitelistItem, whitelistSize);
+			slotConfig.GetIntKey(key, whitelistItem, sizeof(whitelistItem));
 
 			// check to test the weapon class or id based on entry.
-			if (StrContains(whitelistItem, "tf_", false) != -1)
+			if (!IsCharNumeric(whitelistItem[0])) //weapon classnames should never have a number
 			{
-				TF2_TranslateWeaponEntForClass(view_as<TFClassType>(class), whitelistItem, whitelistSize);
-
 				if (StrEqual(whitelistItem, wepClass))
 				{
 					validWep = true;
