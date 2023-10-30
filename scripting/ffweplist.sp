@@ -1,13 +1,17 @@
 #include <sourcemod>
 #include <sdkhooks>
 #include <sdktools>
+
 #include <tf2>
 #include <tf2_stocks>
 #include <tf2attributes>
+
 #include <cfgmap>
+
 #include <tf_econ_data>
-#include <devstuff/utilstuff.sp>
 #include <stocksoop/tf/weapon>
+#include <tf2utils>
+
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -19,7 +23,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.1.5",
+	version = "2.1.6",
 	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -70,7 +74,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
-	HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
+	//HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
 	HookEvent("post_inventory_application", Event_Regenerate, EventHookMode_Post);
 
 	enabled = CreateConVar("ffweplist_enabled", "1", "Enable ffdonk features.", _, true, 0.0, true, 1.0);
@@ -236,7 +240,7 @@ any Native_LoadConfig(Handle plugin, int numParams)
 	GetNativeString(1, buffer, length+1);
 
 	LoadConfig(buffer);
-	regenAllPlayers();
+	RegenAllPlayers();
 
 	return true;
 }
@@ -245,23 +249,23 @@ public void OnEnabledChanged(ConVar convar, char[] oldvalue, char[] newvalue)
 {
 	if (StringToInt(newvalue) == 0)
 	{
-		regenAllPlayers();
+		RegenAllPlayers();
 
 		PrintToServer("Weapon whitelist plugin is disabled.");
 	}
 	else
 	{
 		LoadConfig(configName);
-		regenAllPlayers();
+		RegenAllPlayers();
 
 		PrintToServer("Weapon whitelist plugin is enabled.");
 	}
 }
 
-public void regenAllPlayers()
+public void RegenAllPlayers()
 {
 	for (int i = 1; i <= MaxClients; i++)
-			if (isPlayerReal(i))
+			if (IsClientConnected(i))
 				TF2_RegeneratePlayer(i);
 }
 
@@ -271,7 +275,7 @@ public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadc
 	{
 		int client = GetClientOfUserId(GetEventInt(event, "userid"));
 
-		if (isPlayerReal(client))
+		if (IsClientConnected(client))
 			CreateTimer(0.1, Timer_PlayerApplication, client);
 	}
 
@@ -283,7 +287,7 @@ public Action Event_Regenerate(Handle event, const char[] name, bool dontBroadca
 	if (enabled.BoolValue && event != INVALID_HANDLE)
 	{
 		int client = GetClientOfUserId(GetEventInt(event, "userid"));
-		if (isPlayerReal(client))
+		if (IsClientConnected(client))
 			CreateTimer(0.1, Timer_PlayerApplication, client);
 	}
 
@@ -305,7 +309,7 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 	if (!allowedClasses[class-1])
 	{
 		TF2_SetPlayerClass(client, defaultClass);
-		TF2_RegeneratePlayer(client);
+		TF2_RespawnPlayer(client);
 		return Plugin_Handled;
 	}
 
@@ -411,4 +415,51 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 	Call_Finish();
 
 	return Plugin_Handled;
+}
+
+int WeaponID(int client, int entity = -1, int slot = -1)
+{
+    if (entity == -1)
+    {
+        entity = GetPlayerWeaponSlot(client, slot);
+    }
+
+    if (!IsValidEntity(entity)) return -1;
+
+    return GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
+}
+
+int CreateNamedItem(int client, int itemindex, const char[] classname, int level, int quality, bool wearable = false)
+{
+    int weapon = CreateEntityByName(classname);
+    
+    if (!IsValidEntity(weapon))
+    {
+        LogError("Invalid!");
+        return -1;
+    }
+    
+    char entclass[64];
+
+    GetEntityNetClass(weapon, entclass, sizeof(entclass));	
+
+    SetEntData(weapon, FindSendPropInfo(entclass, "m_iItemDefinitionIndex"), itemindex);
+    SetEntData(weapon, FindSendPropInfo(entclass, "m_bInitialized"), 1);
+    SetEntData(weapon, FindSendPropInfo(entclass, "m_iEntityLevel"), level);
+    SetEntData(weapon, FindSendPropInfo(entclass, "m_iEntityQuality"), quality);
+
+    SetEntProp(weapon, Prop_Send, "m_bValidatedAttachedEntity", 1);
+    
+    DispatchSpawn(weapon);
+
+    if (!wearable) 
+    {
+        EquipPlayerWeapon(client, weapon);
+    }
+    else
+    {
+        TF2Util_EquipPlayerWearable(client, weapon);
+    }
+    
+    return weapon;
 }
