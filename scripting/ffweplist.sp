@@ -409,6 +409,10 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 
 	if (autoEquipSlot != -1) SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, autoEquipSlot));
 
+	//remove overheal
+	int maxHealth = TF2Util_GetEntityMaxHealth(client);
+	SetEntityHealth(client, maxHealth);
+
 	//Forward loadout applied.
 	Call_StartForward(loadoutApplied);
 	Call_PushCell(client);
