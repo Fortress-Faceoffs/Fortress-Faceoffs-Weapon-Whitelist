@@ -77,7 +77,7 @@ public void OnPluginStart()
 	//HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
 	HookEvent("post_inventory_application", Event_Regenerate, EventHookMode_Post);
 
-	enabled = CreateConVar("ffweplist_enabled", "1", "Enable ffdonk features.", _, true, 0.0, true, 1.0);
+	enabled = CreateConVar("ffweplist_enabled", "1", "When set, the plugin will be enabled.", _, true, 0.0, true, 1.0);
 	enabled.AddChangeHook(OnEnabledChanged);
 
 	autoLoad = CreateConVar("ffweplist_autoload", "1", "Autoloads the config.", _, true, 0.0, true, 1.0);
@@ -408,6 +408,10 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 	}
 
 	if (autoEquipSlot != -1) SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, autoEquipSlot));
+
+	//remove overheal
+	int maxHealth = TF2Util_GetEntityMaxHealth(client);
+	SetEntityHealth(client, maxHealth);
 
 	//Forward loadout applied.
 	Call_StartForward(loadoutApplied);
