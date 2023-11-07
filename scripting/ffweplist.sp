@@ -23,7 +23,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.1.7",
+	version = "2.1.8",
 	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -83,7 +83,7 @@ public void OnPluginStart()
 	autoLoad = CreateConVar("ffweplist_autoload", "1", "Autoloads the config.", _, true, 0.0, true, 1.0);
 
 	weaponConfig = CreateConVar("ffweplist_file", "", "An override to which config that the plugin is using.");
-	weaponConfig.AddChangeHook(fileChanged);
+	weaponConfig.AddChangeHook(FileChanged);
 
 	RegAdminCmd("ffweplist_reloadconfig", ConCmd_Reload, ADMFLAG_BAN, "Reloads the weapon config.", "ffweplist");
 
@@ -92,7 +92,7 @@ public void OnPluginStart()
 	if (autoLoad.BoolValue) CreateTimer(1.0, LoadTimer, 0, TIMER_FLAG_NO_MAPCHANGE);
 }
 
-void fileChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+void FileChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	if (autoLoad.BoolValue) CreateTimer(1.0, LoadTimer, 0, TIMER_FLAG_NO_MAPCHANGE);
 }
@@ -130,6 +130,9 @@ void LoadConfig(char[] newConfig)
 		newConfigBuffer = overrideName;
 
 	Format(configLocation, sizeof(configLocation), "configs/ffwl/%s", newConfigBuffer);
+
+	if (config != INVALID_HANDLE)
+		delete config;
 
 	config = new ConfigMap(configLocation);
 
