@@ -23,7 +23,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.1.9",
+	version = "2.1.10",
 	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -416,8 +416,6 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 	int maxHealth = TF2Util_GetEntityMaxHealth(client);
 	SetEntityHealth(client, maxHealth);
 
-	TF2_RegeneratePlayer(client);
-
 	//Forward loadout applied.
 	Call_StartForward(loadoutApplied);
 	Call_PushCell(client);
@@ -458,17 +456,16 @@ int CreateNamedItem(int client, int itemindex, const char[] classname, int level
     SetEntData(weapon, FindSendPropInfo(entclass, "m_iEntityQuality"), quality);
 
     SetEntProp(weapon, Prop_Send, "m_bValidatedAttachedEntity", 1);
-    
+
     DispatchSpawn(weapon);
 
     if (!wearable) 
     {
-        EquipPlayerWeapon(client, weapon);
-    }
+		EquipPlayerWeapon(client, weapon);
+		TF2_ResetWeaponAmmo(weapon);
+	}
     else
-    {
         TF2Util_EquipPlayerWearable(client, weapon);
-    }
     
     return weapon;
 }
