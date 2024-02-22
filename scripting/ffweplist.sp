@@ -23,7 +23,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.1.12",
+	version = "2.1.13",
 	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -404,10 +404,9 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 				isWearable = true;
 
 			TF2_RemoveWeaponSlot(client, slot);
+
 			CreateNamedItem(client, defaultWep, defaultWepClass, 15, 6, isWearable);
 		}
-
-
 	}
 
 	if (autoEquipSlot != -1) SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, autoEquipSlot));
@@ -417,7 +416,7 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 	SetEntityHealth(client, maxHealth);
 
 	//test fix
-	TF2_RemoveCondition(client, TFCond_CritCola);
+	TF2_RemoveCondition(client, TFCond_Kritzkrieged);
 
 	//Forward loadout applied.
 	Call_StartForward(loadoutApplied);
