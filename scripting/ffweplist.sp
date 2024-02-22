@@ -23,7 +23,7 @@ public Plugin myinfo =
 	name = "Fortress-Faceoffs-Weapon-Whitelist",
 	author = "minesettimi",
 	description = "Enforces weapon whitelist by removing banned weapons and giving allowed weapons",
-	version = "2.1.10",
+	version = "2.1.11",
 	url = "https://github.com/Fortress-Faceoffs/Fortress-Faceoffs-Weapon-Whitelist"
 };
 
@@ -415,6 +415,8 @@ public Action Timer_PlayerApplication(Handle timer, int client)
 	//remove overheal
 	int maxHealth = TF2Util_GetEntityMaxHealth(client);
 	SetEntityHealth(client, maxHealth);
+
+	TF2_RegeneratePlayer(client);
 
 	//Forward loadout applied.
 	Call_StartForward(loadoutApplied);
